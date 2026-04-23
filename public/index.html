@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GitHub Automated Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --accent: #6c5ce7;
+      --accent-hover: #a29bfe;
+      --text-main: #ffffff;
+      --text-muted: #a0aab2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-color);
+      background-image: radial-gradient(circle at 15% 50%, rgba(108, 92, 231, 0.15), transparent 25%),
+                        radial-gradient(circle at 85% 30%, rgba(0, 206, 201, 0.1), transparent 25%);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+      z-index: 10;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 3rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      text-align: center;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #a29bfe, #00cec9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, var(--accent), #4834d4);
+      color: #fff;
+      text-decoration: none;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(108, 92, 231, 0.6);
+      background: linear-gradient(135deg, var(--accent-hover), var(--accent));
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--glass-border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 2rem auto;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    .result-container {
+      display: none;
+      text-align: left;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      padding: 1.5rem;
+      border-radius: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .stat-box:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .judgment {
+      background: rgba(108, 92, 231, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 1.5rem;
+      border-radius: 0 12px 12px 0;
+      font-style: italic;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card" id="main-card">
+      
+      <!-- Login View -->
+      <div id="view-login">
+        <h1>GitHub Insights</h1>
+        <p>Unlock an AI-driven analysis of your GitHub repositories. Discover your strengths, favorite languages, and overall developer score.</p>
+        <a href="/auth/github" class="btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Analyze My GitHub
+        </a>
+      </div>
+
+      <!-- Loading View -->
+      <div id="view-loading" class="hidden">
+        <div class="spinner"></div>
+        <h2 style="font-family: 'Outfit'; margin-bottom: 1rem;">Analyzing Profile...</h2>
+        <p>Crunching the numbers, reading repositories, and generating your developer score. This might take a few seconds.</p>
+      </div>
+
+      <!-- Result View -->
+      <div id="view-result" class="result-container hidden">
+        <div style="text-align: center;">
+          <h1 id="res-username">@username</h1>
+          <p>Analysis Complete</p>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-value" id="res-score">0</div>
+            <div class="stat-label">Dev Score</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="res-stars">0</div>
+            <div class="stat-label">Total Stars</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="res-repos">0</div>
+            <div class="stat-label">Repositories</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="res-lang">N/A</div>
+            <div class="stat-label">Top Language</div>
+          </div>
+        </div>
+
+        <div class="judgment" id="res-judgment">
+          Loading judgment...
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/" style="color: var(--accent); text-decoration: none; font-weight: bold;">Analyze Another Account</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const viewLogin = document.getElementById('view-login');
+    const viewLoading = document.getElementById('view-loading');
+    const viewResult = document.getElementById('view-result');
+    const MAX_RETRIES = 30;
+
+    initialize();
+
+    async function initialize() {
+      try {
+        const meResponse = await fetch('/api/me', { credentials: 'same-origin' });
+        if (meResponse.status !== 200) {
+          return;
+        }
+
+        viewLogin.classList.add('hidden');
+        viewLoading.classList.remove('hidden');
+        pollStatus(0);
+      } catch (err) {
+        console.error('Initialization error', err);
+      }
+    }
+
+    async function pollStatus(retryCount) {
+      try {
+        const response = await fetch('/api/analysis/me', { credentials: 'same-origin' });
+        if (response.status === 401) {
+          viewLoading.classList.add('hidden');
+          viewLogin.classList.remove('hidden');
+          return;
+        }
+        if (response.status === 404) {
+           viewLoading.innerHTML = "<h2>User not found</h2><p>Something went wrong.</p><a href='/'>Go back</a>";
+           return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'completed') {
+          showResults(data);
+        } else if (data.status === 'failed') {
+          viewLoading.innerHTML = "<h2>Analysis Failed</h2><p>There was an error analyzing the profile.</p><a href='/'>Go back</a>";
+        } else {
+          // Keep polling with capped retries and mild backoff
+          if (retryCount >= MAX_RETRIES) {
+            viewLoading.innerHTML = "<h2>Analysis is taking longer than expected</h2><p>Please refresh in a little while.</p><a href='/'>Go back</a>";
+            return;
+          }
+          const nextDelay = Math.min(5000, 2000 + retryCount * 100);
+          setTimeout(() => pollStatus(retryCount + 1), nextDelay);
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+        if (retryCount >= MAX_RETRIES) {
+          viewLoading.innerHTML = "<h2>Network Error</h2><p>Unable to complete analysis right now.</p><a href='/'>Go back</a>";
+          return;
+        }
+        const nextDelay = Math.min(5000, 2000 + retryCount * 100);
+        setTimeout(() => pollStatus(retryCount + 1), nextDelay);
+      }
+    }
+
+    function showResults(data) {
+      viewLoading.classList.add('hidden');
+      viewResult.classList.remove('hidden');
+
+      document.getElementById('res-username').innerText = `@${data.username}`;
+      document.getElementById('res-score').innerText = data.evaluation.score;
+      document.getElementById('res-stars').innerText = data.evaluation.totalStars;
+      document.getElementById('res-repos').innerText = data.evaluation.totalRepositories;
+      document.getElementById('res-lang').innerText = data.evaluation.primaryLanguage;
+      document.getElementById('res-judgment').innerText = data.evaluation.judgmentMessage;
+    }
+  </script>
+</body>
+</html>
