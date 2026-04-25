@@ -1,0 +1,11 @@
+# Python deps for crawl4ai sidecar.
+# Used by python/crawl_one.py and python/Dockerfile.crawl4ai.
+#
+# Docker path (recommended):
+#   docker build -f python/Dockerfile.crawl4ai -t pocgithubanalyse-crawl4ai:latest .
+# Local path:
+#   pip install -r requirements-crawl.txt
+#   python -m playwright install --with-deps chromium
+#
+# NOTE: Unpinned on purpose to install the latest crawl4ai release.
+crawl4ai

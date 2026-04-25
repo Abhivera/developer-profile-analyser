@@ -1,0 +1,27 @@
+# --- Node ---
+node_modules
+dist
+
+# --- Version control ---
+.git
+.gitignore
+
+# --- Editor / IDE ---
+.cursor
+.vscode
+*.md
+
+# --- Environment & secrets ---
+.env
+.env.*
+
+# --- Logs ---
+npm-debug.log
+*.log
+
+# --- Local dev artifacts ---
+agent-transcripts
+mcps
+
+# --- Python dedicated Docker context (not needed in main build) ---
+python/Dockerfile.crawl4ai

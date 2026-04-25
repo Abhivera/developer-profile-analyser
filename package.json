@@ -5,26 +5,42 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
+    "worker": "node dist/workerEntry.js",
     "dev": "nodemon src/index.ts",
+    "dev:worker": "nodemon src/workerEntry.ts",
+    "crawl4ai:pull": "docker pull unclecode/crawl4ai:0.8",
+    "crawl4ai:test": "docker run --rm unclecode/crawl4ai:0.8 https://example.com",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down -v",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
+    "apicache": "^1.6.3",
     "axios": "^1.15.2",
+    "bullmq": "^5.58.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.4.1",
     "express-session": "^1.18.2",
-    "mongoose": "^9.5.0"
+    "ioredis": "^5.8.2",
+    "mongoose": "^9.5.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/apicache": "^1.6.8",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.18.2",
     "@types/node": "^25.6.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"

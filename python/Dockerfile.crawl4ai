@@ -1,0 +1,36 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ARG DEBIAN_MIRROR=deb.debian.org
+
+# Basic runtime dependencies used by headless browser tooling.
+RUN sed -i "s|http://deb.debian.org/debian|http://${DEBIAN_MIRROR}/debian|g; s|http://deb.debian.org/debian-security|http://${DEBIAN_MIRROR}/debian-security|g" /etc/apt/sources.list.d/debian.sources \
+    && printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\nAcquire::http::Pipeline-Depth "0";\n' > /etc/apt/apt.conf.d/99network-tuning \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-crawl.txt /app/requirements-crawl.txt
+RUN pip install --no-cache-dir -r /app/requirements-crawl.txt
+RUN python -m playwright install chromium
+
+COPY python/crawl_one.py /app/crawl_one.py
+
+# Run one URL per container invocation:
+# docker run --rm <image> https://example.com
+ENTRYPOINT ["python", "/app/crawl_one.py"]

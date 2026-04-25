@@ -1,0 +1,56 @@
+services:
+  # ── Redis (BullMQ queue backend) ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Web Application ───────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DEBIAN_MIRROR: ${DEBIAN_MIRROR:-deb.debian.org}
+        CRAWL_RUNTIME: docker
+    image: pocgithubanalyse-app:latest
+    pull_policy: never
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      REDIS_URL: redis://redis:6379
+      CRAWL4AI_MODE: docker
+      CRAWL4AI_DOCKER_IMAGE: unclecode/crawl4ai:0.8
+    ports:
+      - "3000:3000"
+
+  # ── BullMQ Worker ─────────────────────────────────────────────────────────────
+  worker:
+    image: pocgithubanalyse-app:latest
+    pull_policy: never
+    depends_on:
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_started
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      REDIS_URL: redis://redis:6379
+      CRAWL4AI_MODE: docker
+      CRAWL4AI_DOCKER_IMAGE: unclecode/crawl4ai:0.8
+    command: ["node", "dist/workerEntry.js"]
